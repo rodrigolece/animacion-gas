@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+
+<body>
+
+<canvas id="canvas" width="400" height="400", style="border:1px solid #d3d3d3;">
+</canvas>
+<button onclick="gas.move()"> Move gas! </button>
+
+<script>
+var canvas = document.getElementById("canvas");
+var ctx = canvas.getContext("2d");
+
+var radiusParticle = canvas.height/50;
+var numParticles = 100;
+var Dt = 100 ;
+
+
+var gas = new Gas(numParticles, canvas.width, canvas.height);
+drawParticles(gas, ctx, radiusParticle);
+
+function drawParticles(gas, ctx, rad) {
+    for (var i = 0; i < gas.numParticles; i++) {
+        part = gas.particles[i];
+        ctx.translate(part.pos.x, part.pos.y);
+        ctx.beginPath();
+        ctx.arc(0, 0, rad, 0, 2*Math.PI);
+        ctx.stroke();
+        ctx.translate(-part.pos.x, -part.pos.y);
+    }
+}
+
+function Particle(posx, posy, velx, vely) {
+    this.pos = {x: posx, y: posy};
+    this.vel = {vx: velx, vy: vely};
+    this.move = moveParticle;
+}
+
+function moveParticle() {
+    this.pos = {
+        x: (this.pos.x + this.vel.vx*Dt),
+        y: (this.pos.y + this.vel.vy*Dt)
+    };
+}
+
+function Gas(numParticles, x, y) {
+    this.numParticles = numParticles;
+    this.particles = [];
+    this.size = {lx: x, ly: y};
+    this.move = moveGas;
+
+    for (var i = 0; i < numParticles; i++) {
+        var part = new Particle(x*Math.random(), y*Math.random(),
+        Math.random()*2-1, Math.random()*2-1);
+        this.particles.push(part) ;
+    }
+}
+
+function moveGas() {
+    for (var i = 0; i < this.numParticles; i++) {
+        this.particles[i].move();
+    }
+    drawParticles(gas, ctx, radiusParticle);
+}
+</script>
+
+
+</body>
+</html>

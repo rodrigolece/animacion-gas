@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+
+<body>
+
+<canvas id="canvas" width="300" height="300" style="background-color:#333">
+</canvas>
+
+<script>
+var canvas = document.getElementById("canvas");
+var ctx = canvas.getContext("2d");
+var radius = canvas.height / 2;
+// Movemos el origen del contexto al centro del reloj
+ctx.translate(radius,radius);
+radius = 0.9 * radius;
+// drawClock();
+setInterval(drawClock, 1000);
+
+function drawClock() {
+    drawFace(ctx, radius);
+    drawNumbers(ctx, radius);
+    drawTime(ctx, radius);
+}
+
+function drawFace(ctx, radius) {
+    var gradient ;
+
+    ctx.beginPath();
+    ctx.arc(0, 0, radius, 0, 2*Math.PI);
+    // x, y, r, theta1, theta2 (se recorre en sentido de manecillas)
+    ctx.fillStyle = 'white';
+    ctx.fill();
+
+    gradient = ctx.createRadialGradient(0, 0, radius*0.95, 0, 0, radius*1.05);
+    gradient.addColorStop(0, '#333');
+    gradient.addColorStop(0.5, 'white');
+    gradient.addColorStop(1, '#333');
+    ctx.strokeStyle = gradient;
+    ctx.lineWidth = 0.1 *radius;
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.arc(0, 0, radius*0.1, 0, 2*Math.PI);
+    ctx.fillStyle = '#333';
+    ctx.fill();
+}
+
+function drawNumbers(ctx, radius) {
+    var ang;
+    var num;
+    ctx.font = radius*0.15 + "px arial";
+    ctx.textBaseline = 'middle';
+    ctx.textAlign = 'center';
+
+    for (num = 1; num < 13; num++) {
+        ang = num * Math.PI / 6;
+        ctx.rotate(ang);
+        ctx.translate(0, -radius*0.85);
+        ctx.rotate(-ang);
+        ctx.fillText(num.toString(), 0, 0);
+        ctx.rotate(ang);
+        ctx.translate(0, radius*0.85);
+        ctx.rotate(-ang);
+    }
+}
+
+function drawTime(ctx, radius) {
+    var now = new Date();
+    var hour = now.getHours();
+    var minute = now.getMinutes();
+    var second = now.getSeconds();
+
+    hour = hour % 12;
+    hour = hour*Math.PI/6 + minute*Math.PI/360 + second*Math.PI/360/60;
+    drawHand(ctx, hour, radius*0.5, radius*0.07);
+
+    minute = minute*Math.PI/30 + second*Math.PI/1800;
+    drawHand(ctx, minute, radius*0.8, radius*0.07);
+
+    second = second*Math.PI/30;
+    drawHand(ctx, second, radius*0.9, radius*0.02);
+
+}
+
+function drawHand(ctx, pos, length, width) {
+    ctx.beginPath();
+    ctx.lineWidth = width;
+    ctx.lineCap = "round";
+    ctx.moveTo(0,0); // no es lo mismo que translate, es el inicio de la línea
+    ctx.rotate(pos);
+    ctx.lineTo(0, -length);
+    ctx.stroke();
+    ctx.rotate(-pos);
+}
+</script>
+
+
+</body>
+
+</html>
