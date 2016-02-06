@@ -5,7 +5,7 @@
 
 <canvas id="canvas" width="400" height="400", style="border:1px solid #d3d3d3;">
 </canvas>
-<button onclick="gas.move()"> Move gas! </button>
+<!--<button onclick="gas.move()"> Move gas! </button>-->
 
 <script>
 var canvas = document.getElementById("canvas");
@@ -13,11 +13,12 @@ var ctx = canvas.getContext("2d");
 
 var radiusParticle = canvas.height/50;
 var numParticles = 100;
-var Dt = 100 ;
+var Dt = 1 ;
 
-
-var gas = new Gas(numParticles, canvas.width, canvas.height);
-drawParticles(gas, ctx, radiusParticle);
+var gas = new Gas(numParticles, canvas.width-2*radiusParticle,
+     canvas.height-2*radiusParticle);
+// drawParticles(gas, ctx, radiusParticle);
+setInterval(function () { gas.move(); }, 10);
 
 function drawParticles(gas, ctx, rad) {
     for (var i = 0; i < gas.numParticles; i++) {
@@ -34,12 +35,29 @@ function Particle(posx, posy, velx, vely) {
     this.pos = {x: posx, y: posy};
     this.vel = {vx: velx, vy: vely};
     this.move = moveParticle;
+    // this.velReversed = {x: false, y:false};
 }
 
 function moveParticle() {
+    var tmpx = this.pos.x + this.vel.vx*Dt;
+    var tmpy = this.pos.y + this.vel.vy*Dt;
+    if (tmpx + radiusParticle > canvas.width) {
+        // tmpx = 2*canvas.width - tmpx;
+        this.vel.vx *= -1;
+    } else if (tmpx - radiusParticle < 0) {
+        // tmpx *= -1;
+        this.vel.vx *= -1;
+    }
+    if (tmpy + radiusParticle > canvas.height) {
+        // tmpy = 2*canvas.height - tmpy;
+        this.vel.vy *= -1;
+    } else if (tmpy - radiusParticle < 0) {
+        // tmpy *= -1;
+        this.vel.vy *= -1;
+    }
     this.pos = {
-        x: (this.pos.x + this.vel.vx*Dt),
-        y: (this.pos.y + this.vel.vy*Dt)
+        x: tmpx,
+        y: tmpy
     };
 }
 
@@ -50,7 +68,8 @@ function Gas(numParticles, x, y) {
     this.move = moveGas;
 
     for (var i = 0; i < numParticles; i++) {
-        var part = new Particle(x*Math.random(), y*Math.random(),
+        var part = new Particle(x*Math.random()+radiusParticle,
+        y*Math.random()+radiusParticle,
         Math.random()*2-1, Math.random()*2-1);
         this.particles.push(part) ;
     }
@@ -60,6 +79,7 @@ function moveGas() {
     for (var i = 0; i < this.numParticles; i++) {
         this.particles[i].move();
     }
+    ctx.clearRect(0,0,canvas.width,canvas.height)
     drawParticles(gas, ctx, radiusParticle);
 }
 </script>
