@@ -5,15 +5,16 @@
 
 <canvas id="canvas" width="400" height="400", style="border:1px solid #d3d3d3;">
 </canvas>
-<!--<button onclick="gas.move()"> Move gas! </button>-->
+<!-- <button onclick="gas.move()"> Move gas! </button> -->
 
 <script>
 var canvas = document.getElementById("canvas");
 var ctx = canvas.getContext("2d");
 
 var radiusParticle = canvas.height/50;
-var numParticles = 100;
-var Dt = 1 ;
+var numParticles = 50;
+var Dt = 1;
+var minD = 2*radiusParticle;
 
 var gas = new Gas(numParticles, canvas.width-2*radiusParticle,
      canvas.height-2*radiusParticle);
@@ -23,11 +24,11 @@ setInterval(function () { gas.move(); }, 10);
 function drawParticles(gas, ctx, rad) {
     for (var i = 0; i < gas.numParticles; i++) {
         part = gas.particles[i];
-        ctx.translate(part.pos.x, part.pos.y);
+        // ctx.translate(part.pos.x, part.pos.y);
         ctx.beginPath();
-        ctx.arc(0, 0, rad, 0, 2*Math.PI);
+        ctx.arc(part.pos.x, part.pos.y, rad, 0, 2*Math.PI);
         ctx.stroke();
-        ctx.translate(-part.pos.x, -part.pos.y);
+        // ctx.translate(-part.pos.x, -part.pos.y);
     }
 }
 
@@ -52,6 +53,7 @@ function moveParticle() {
     };
 }
 
+
 function Gas(numParticles, x, y) {
     this.numParticles = numParticles;
     this.particles = [];
@@ -66,8 +68,47 @@ function Gas(numParticles, x, y) {
     }
 }
 
+function distParticles(a, b) {
+    dx = b.pos.x - a.pos.x;
+    dy = b.pos.y - a.pos.y;
+    return {
+        norm: Math.sqrt(dx*dx + dy*dy),
+        dx: dx,
+        dy: dy
+    }
+}
+
+function checkColision(gas) {
+    for (var i = 0; i < gas.numParticles; i++) {
+        a = gas.particles[i];
+
+        for (var j = i+1; j < this.numParticles; j++) {
+            b = gas.particles[j];
+            var dist = distParticles(a, b);
+            if (dist.norm > 2 && dist.norm < minD) {
+            // if (dist.norm < minD) {
+                // Si hay colisión:
+                rx = dist.dx / dist.norm;
+                ry = dist.dy / dist.norm;
+
+                dvx = b.vel.vx - a.vel.vx;
+                dvy = b.vel.vy - a.vel.vy;
+
+                //(vb - va)·r
+                var projection = rx * dvx + ry * dvy;
+                a.vel.vx += projection * rx;
+                a.vel.vy += projection * ry;
+
+                b.vel.vx -= projection * rx;
+                b.vel.vy -= projection * ry;
+            }
+        }
+    }
+}
+
 function moveGas() {
-    for (var i = 0; i < this.numParticles; i++) {
+    checkColision(this);
+    for (var i = 0; i < this.numParticles; i++){
         this.particles[i].move();
     }
     ctx.clearRect(0,0,canvas.width,canvas.height)
