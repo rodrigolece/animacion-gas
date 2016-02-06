@@ -35,29 +35,20 @@ function Particle(posx, posy, velx, vely) {
     this.pos = {x: posx, y: posy};
     this.vel = {vx: velx, vy: vely};
     this.move = moveParticle;
-    // this.velReversed = {x: false, y:false};
 }
 
 function moveParticle() {
-    var tmpx = this.pos.x + this.vel.vx*Dt;
-    var tmpy = this.pos.y + this.vel.vy*Dt;
-    if (tmpx + radiusParticle > canvas.width) {
-        // tmpx = 2*canvas.width - tmpx;
-        this.vel.vx *= -1;
-    } else if (tmpx - radiusParticle < 0) {
-        // tmpx *= -1;
+    var posx = this.pos.x;
+    var posy = this.pos.y;
+    if (posx + radiusParticle > canvas.width || posx - radiusParticle < 0) {
         this.vel.vx *= -1;
     }
-    if (tmpy + radiusParticle > canvas.height) {
-        // tmpy = 2*canvas.height - tmpy;
-        this.vel.vy *= -1;
-    } else if (tmpy - radiusParticle < 0) {
-        // tmpy *= -1;
+    if (posy + radiusParticle > canvas.height || posy - radiusParticle < 0) {
         this.vel.vy *= -1;
     }
     this.pos = {
-        x: tmpx,
-        y: tmpy
+        x: posx + this.vel.vx*Dt,
+        y: posy + this.vel.vy*Dt
     };
 }
 
