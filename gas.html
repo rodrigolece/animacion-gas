@@ -16,8 +16,7 @@ var numParticles = 50;
 var Dt = 1;
 var minD = 2*radiusParticle;
 
-var gas = new Gas(numParticles, canvas.width-2*radiusParticle,
-     canvas.height-2*radiusParticle);
+var gas = new Gas(numParticles, canvas.width - minD, canvas.height - minD);
 // drawParticles(gas, ctx, radiusParticle);
 setInterval(function () { gas.move(); }, 10);
 
@@ -54,18 +53,25 @@ function moveParticle() {
 }
 
 
-function Gas(numParticles, x, y) {
+function Gas(numParticles, lx, ly) {
     this.numParticles = numParticles;
     this.particles = [];
-    this.size = {lx: x, ly: y};
+    this.size = {lx: lx, ly: ly};
     this.move = moveGas;
 
     for (var i = 0; i < numParticles; i++) {
-        var part = new Particle(x*Math.random()+radiusParticle,
-        y*Math.random()+radiusParticle,
-        Math.random()*2-1, Math.random()*2-1);
-        this.particles.push(part) ;
+        var pos = newPos(lx, ly);
+        var part = new Particle(pos.x, pos.y, Math.random()*2-1, Math.random()*2-1);
+
+        this.particles.push(part);
     }
+}
+
+function newPos(lx, ly) {
+    return {
+        x: lx * Math.random() + radiusParticle,
+        y: ly * Math.random() + radiusParticle
+    };
 }
 
 function distParticles(a, b) {
