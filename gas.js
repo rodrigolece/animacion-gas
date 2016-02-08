@@ -10,6 +10,7 @@ var lx = 1;
 var ly = 1;
 
 var gas = new Gas(numParticles, lx - minD, ly - minD);
+// drawParticles(gas);
 setInterval(function () { gas.move(); }, 33);
 
 function Gas(numParticles, lx, ly) {
@@ -19,7 +20,7 @@ function Gas(numParticles, lx, ly) {
     this.move = moveGas;
 
     for (var i = 0; i < numParticles; i++) {
-        var pos = newPos(lx, ly);
+        var pos = newPos(this);
         var part = new Particle(pos.x, pos.y, Math.random()*2-1, Math.random()*2-1);
 
         this.particles.push(part);
@@ -46,11 +47,24 @@ function drawParticles(gas) {
     }
 }
 
-function newPos(lx, ly) {
-    return {
-        x: lx * Math.random() + radiusParticle,
-        y: ly * Math.random() + radiusParticle
-    };
+function newPos(gas) {
+    var n = gas.particles.length;
+    do {
+        var overlap = false;
+        var x = gas.size.lx * Math.random() + radiusParticle;
+        var y = gas.size.ly * Math.random() + radiusParticle;
+        if (n == 0) {
+            return { x: x, y: y };
+        }
+        for (var i = 0; i < n; i++){
+            var part = gas.particles[i];
+            var dx = part.pos.x - x;
+            var dy = part.pos.y - y;
+            var norm = Math.sqrt( dx*dx + dy*dy );
+            if (norm <= minD) { overlap = true; }
+        }
+    } while (overlap) ;
+    return { x: x, y: y };
 }
 
 function checkColision(gas) {
@@ -85,10 +99,10 @@ function checkColision(gas) {
 }
 
 function distParticles(a, b) {
-    dx = b.pos.x - a.pos.x;
-    dy = b.pos.y - a.pos.y;
+    var dx = b.pos.x - a.pos.x;
+    var dy = b.pos.y - a.pos.y;
     return {
-        norm: Math.sqrt(dx*dx + dy*dy),
+        norm: Math.sqrt( dx*dx + dy*dy ),
         dx: dx,
         dy: dy
     }
@@ -114,5 +128,4 @@ function moveParticle() {
         x: this.pos.x + this.vel.vx * Dt,
         y: this.pos.y + this.vel.vy * Dt
     };
-
 }
