@@ -98,30 +98,21 @@ function Particle(posx, posy, velx, vely) {
     this.pos = {x: posx, y: posy};
     this.vel = {vx: velx, vy: vely};
     this.move = moveParticle;
-    // this.counterWalls = 0;
     // this.counterParticles = 0;
 }
 
 function moveParticle() {
-    var posx = this.pos.x;
-    var posy = this.pos.y;
-    if (posx + radiusParticle > lx || posx - radiusParticle < 0) {
+    var futurex = this.pos.x + this.vel.vx * Dt;
+    var futurey = this.pos.y + this.vel.vy * Dt;
+    if (futurex + radiusParticle > lx || futurex - radiusParticle < 0) {
         this.vel.vx *= -1;
-        // if (this.counterWalls == 0) { this.vel.vx *= -1; }
-        // this.counterWalls++
     }
-    // else
-    if (posy + radiusParticle > ly || posy - radiusParticle < 0) {
+    if (futurey + radiusParticle > ly || futurey - radiusParticle < 0) {
         this.vel.vy *= -1;
-        // if (this.counterWalls == 0) { this.vel.vy *= -1; }
-        // this.counterWalls++;
     }
-    // else {
-    //     this.counterWalls = 0
-    // }
     this.pos = {
-        x: posx + this.vel.vx*Dt,
-        y: posy + this.vel.vy*Dt
+        x: this.pos.x + this.vel.vx * Dt,
+        y: this.pos.y + this.vel.vy * Dt
     };
 
 }
