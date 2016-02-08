@@ -2,47 +2,15 @@
 var canvas = document.getElementById("canvas");
 var ctx = canvas.getContext("2d");
 
-var radiusParticle = canvas.height/50;
 var numParticles = 100;
-var Dt = 1;
+var radiusParticle = 1/50;
+var Dt = 1/200;
 var minD = 2*radiusParticle;
+var lx = 1;
+var ly = 1;
 
-var gas = new Gas(numParticles, canvas.width - minD, canvas.height - minD);
-// drawParticles(gas, ctx, radiusParticle);
-setInterval(function () { gas.move(); }, 10);
-
-function drawParticles(gas, ctx, rad) {
-    for (var i = 0; i < gas.numParticles; i++) {
-        part = gas.particles[i];
-        // ctx.translate(part.pos.x, part.pos.y);
-        ctx.beginPath();
-        ctx.arc(part.pos.x, part.pos.y, rad, 0, 2*Math.PI);
-        ctx.stroke();
-        // ctx.translate(-part.pos.x, -part.pos.y);
-    }
-}
-
-function Particle(posx, posy, velx, vely) {
-    this.pos = {x: posx, y: posy};
-    this.vel = {vx: velx, vy: vely};
-    this.move = moveParticle;
-}
-
-function moveParticle() {
-    var posx = this.pos.x;
-    var posy = this.pos.y;
-    if (posx + radiusParticle > canvas.width || posx - radiusParticle < 0) {
-        this.vel.vx *= -1;
-    }
-    if (posy + radiusParticle > canvas.height || posy - radiusParticle < 0) {
-        this.vel.vy *= -1;
-    }
-    this.pos = {
-        x: posx + this.vel.vx*Dt,
-        y: posy + this.vel.vy*Dt
-    };
-}
-
+var gas = new Gas(numParticles, lx - minD, ly - minD);
+setInterval(function () { gas.move(); }, 33);
 
 function Gas(numParticles, lx, ly) {
     this.numParticles = numParticles;
@@ -58,11 +26,62 @@ function Gas(numParticles, lx, ly) {
     }
 }
 
+function moveGas() {
+    checkColision(this);
+    for (var i = 0; i < this.numParticles; i++){
+        this.particles[i].move();
+    }
+    ctx.clearRect(0,0,canvas.width,canvas.height)
+    drawParticles(gas);
+}
+
+function drawParticles(gas) {
+    for (var i = 0; i < gas.numParticles; i++) {
+        part = gas.particles[i];
+
+        ctx.beginPath();
+        ctx.arc(canvas.width * part.pos.x, canvas.height * part.pos.y,
+            Math.min(canvas.width, canvas.height)*radiusParticle, 0, 2*Math.PI);
+        ctx.stroke();
+    }
+}
+
 function newPos(lx, ly) {
     return {
         x: lx * Math.random() + radiusParticle,
         y: ly * Math.random() + radiusParticle
     };
+}
+
+function checkColision(gas) {
+    for (var i = 0; i < gas.numParticles; i++) {
+        a = gas.particles[i];
+
+        for (var j = i+1; j < this.numParticles; j++) {
+            b = gas.particles[j];
+            var dist = distParticles(a, b);
+            if (dist.norm < minD) {
+                // Si hay colisión:
+                // if (a.counterParticles == 0) {
+                    rx = dist.dx / dist.norm;
+                    ry = dist.dy / dist.norm;
+
+                    dvx = b.vel.vx - a.vel.vx;
+                    dvy = b.vel.vy - a.vel.vy;
+
+                    //(vb - va)·r
+                    var projection = rx * dvx + ry * dvy;
+                    a.vel.vx += projection * rx;
+                    a.vel.vy += projection * ry;
+
+                    b.vel.vx -= projection * rx;
+                    b.vel.vy -= projection * ry;
+                // }
+                // a.counterParticles++; b.counterParticles++;
+            }
+            // else { a.counterParticles = 0; }
+        }
+    }
 }
 
 function distParticles(a, b) {
@@ -75,39 +94,34 @@ function distParticles(a, b) {
     }
 }
 
-function checkColision(gas) {
-    for (var i = 0; i < gas.numParticles; i++) {
-        a = gas.particles[i];
-
-        for (var j = i+1; j < this.numParticles; j++) {
-            b = gas.particles[j];
-            var dist = distParticles(a, b);
-            if (dist.norm > 2 && dist.norm < minD) {
-            // if (dist.norm < minD) {
-                // Si hay colisión:
-                rx = dist.dx / dist.norm;
-                ry = dist.dy / dist.norm;
-
-                dvx = b.vel.vx - a.vel.vx;
-                dvy = b.vel.vy - a.vel.vy;
-
-                //(vb - va)·r
-                var projection = rx * dvx + ry * dvy;
-                a.vel.vx += projection * rx;
-                a.vel.vy += projection * ry;
-
-                b.vel.vx -= projection * rx;
-                b.vel.vy -= projection * ry;
-            }
-        }
-    }
+function Particle(posx, posy, velx, vely) {
+    this.pos = {x: posx, y: posy};
+    this.vel = {vx: velx, vy: vely};
+    this.move = moveParticle;
+    // this.counterWalls = 0;
+    // this.counterParticles = 0;
 }
 
-function moveGas() {
-    checkColision(this);
-    for (var i = 0; i < this.numParticles; i++){
-        this.particles[i].move();
+function moveParticle() {
+    var posx = this.pos.x;
+    var posy = this.pos.y;
+    if (posx + radiusParticle > lx || posx - radiusParticle < 0) {
+        this.vel.vx *= -1;
+        // if (this.counterWalls == 0) { this.vel.vx *= -1; }
+        // this.counterWalls++
     }
-    ctx.clearRect(0,0,canvas.width,canvas.height)
-    drawParticles(gas, ctx, radiusParticle);
+    // else
+    if (posy + radiusParticle > ly || posy - radiusParticle < 0) {
+        this.vel.vy *= -1;
+        // if (this.counterWalls == 0) { this.vel.vy *= -1; }
+        // this.counterWalls++;
+    }
+    // else {
+    //     this.counterWalls = 0
+    // }
+    this.pos = {
+        x: posx + this.vel.vx*Dt,
+        y: posy + this.vel.vy*Dt
+    };
+
 }
