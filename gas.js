@@ -1,18 +1,9 @@
-<!DOCTYPE html>
-<html>
 
-<body>
-
-<canvas id="canvas" width="400" height="400", style="border:1px solid #d3d3d3;">
-</canvas>
-<!-- <button onclick="gas.move()"> Move gas! </button> -->
-
-<script>
 var canvas = document.getElementById("canvas");
 var ctx = canvas.getContext("2d");
 
 var radiusParticle = canvas.height/50;
-var numParticles = 50;
+var numParticles = 100;
 var Dt = 1;
 var minD = 2*radiusParticle;
 
@@ -120,8 +111,3 @@ function moveGas() {
     ctx.clearRect(0,0,canvas.width,canvas.height)
     drawParticles(gas, ctx, radiusParticle);
 }
-</script>
-
-
-</body>
-</html>
