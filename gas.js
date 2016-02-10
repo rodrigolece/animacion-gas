@@ -21,14 +21,15 @@ function Gas(numParticles, lx, ly) {
 
     for (var i = 0; i < numParticles; i++) {
         var pos = newPos(this);
-        var part = new Particle(pos.x, pos.y, Math.random()*2-1, Math.random()*2-1);
+        var part = new Particle(pos.x, pos.y, Math.random()*2-1,
+        Math.random()*2-1, i);
 
         this.particles.push(part);
     }
 }
 
 function moveGas() {
-    checkColision(this);
+    // checkColision(this);
     for (var i = 0; i < this.numParticles; i++){
         this.particles[i].move();
     }
@@ -67,57 +68,22 @@ function newPos(gas) {
     return { x: x, y: y };
 }
 
-function checkColision(gas) {
-    for (var i = 0; i < gas.numParticles; i++) {
-        a = gas.particles[i];
-
-        for (var j = i+1; j < this.numParticles; j++) {
-            b = gas.particles[j];
-            var dist = distParticles(a, b);
-            if (dist.norm < minD) {
-                // Si hay colisión:
-                // if (a.counterParticles == 0) {
-                    rx = dist.dx / dist.norm;
-                    ry = dist.dy / dist.norm;
-
-                    dvx = b.vel.vx - a.vel.vx;
-                    dvy = b.vel.vy - a.vel.vy;
-
-                    //(vb - va)·r
-                    var projection = rx * dvx + ry * dvy;
-                    a.vel.vx += projection * rx;
-                    a.vel.vy += projection * ry;
-
-                    b.vel.vx -= projection * rx;
-                    b.vel.vy -= projection * ry;
-                // }
-                // a.counterParticles++; b.counterParticles++;
-            }
-            // else { a.counterParticles = 0; }
-        }
-    }
-}
-
-function distParticles(a, b) {
-    var dx = b.pos.x - a.pos.x;
-    var dy = b.pos.y - a.pos.y;
-    return {
-        norm: Math.sqrt( dx*dx + dy*dy ),
-        dx: dx,
-        dy: dy
-    }
-}
-
-function Particle(posx, posy, velx, vely) {
+function Particle(posx, posy, velx, vely, i) {
     this.pos = {x: posx, y: posy};
     this.vel = {vx: velx, vy: vely};
     this.move = moveParticle;
-    // this.counterParticles = 0;
+    this.index = i;
 }
 
 function moveParticle() {
     var futurex = this.pos.x + this.vel.vx * Dt;
     var futurey = this.pos.y + this.vel.vy * Dt;
+
+    // Una colisión tiene precedencia sobre rebotar en la pared
+    checkColision(this, futurex, futurey);
+    futurex = this.pos.x + this.vel.vx * Dt;
+    futurey = this.pos.y + this.vel.vy * Dt;
+
     if (futurex + radiusParticle > lx || futurex - radiusParticle < 0) {
         this.vel.vx *= -1;
     }
@@ -129,3 +95,41 @@ function moveParticle() {
         y: this.pos.y + this.vel.vy * Dt
     };
 }
+
+function checkColision(a, futurex, futurey) {
+    for (var j = a.index+1; j < numParticles; j++) {
+        b = gas.particles[j];
+        var bfuturex = b.pos.x + b.vel.vx * Dt;
+        var bfuturey = b.pos.y + b.vel.vy * Dt;
+        // var dist = distParticles(a, b);
+        var dx = bfuturex - futurex;
+        var dy = bfuturey - futurey;
+        var norm = Math.sqrt( dx*dx + dy*dy );
+        if (norm < minD) {
+        // Si hay colisión:
+            rx = dx / norm;
+            ry = dy / norm;
+
+            dvx = b.vel.vx - a.vel.vx;
+            dvy = b.vel.vy - a.vel.vy;
+
+            //(vb - va)·r
+            var projection = rx * dvx + ry * dvy;
+            a.vel.vx += projection * rx;
+            a.vel.vy += projection * ry;
+
+            b.vel.vx -= projection * rx;
+            b.vel.vy -= projection * ry;
+        }
+    }
+}
+
+// function distParticles(a, b) {
+//     var dx = b.pos.x - a.pos.x;
+//     var dy = b.pos.y - a.pos.y;
+//     return {
+//         norm: Math.sqrt( dx*dx + dy*dy ),
+//         dx: dx,
+//         dy: dy
+//     }
+// }
